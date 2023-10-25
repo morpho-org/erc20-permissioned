@@ -7,12 +7,11 @@ import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
-import {ERC20Wrapper} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 
 /// @title ERC20WrapperBase
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice ERC20Wrapper contract to wrap/unwrap permissionless tokens and add a permissioning scheme.
+/// @notice ERC20 wrapper contract to wrap/unwrap permissionless tokens and add a permissioning scheme.
 /// @dev Inherit this contract and override the `hasPermission` and `_update` functions to change the permissioning
 /// scheme.
 contract ERC20WrapperBase is ERC20 {
@@ -69,7 +68,6 @@ contract ERC20WrapperBase is ERC20 {
         SafeERC20.safeTransfer(UNDERLYING, to, value);
         return true;
     }
-
 
     /// @dev Returns true if `account` has no permission.
     /// @dev By default Morpho and Bundler have permission.

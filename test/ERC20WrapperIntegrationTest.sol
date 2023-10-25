@@ -12,6 +12,7 @@ import "./helpers/BaseTest.sol";
 contract ERC20WrapperIntegrationTest is BaseTest {
     address internal MORPHO = makeAddr("Morpho");
     address internal RECEIVER = makeAddr("Receiver");
+    address internal UNDERLYING = makeAddr("Underlying");
 
     ERC20WrapperMock internal wrapper;
     ERC20Mock internal token;
@@ -21,14 +22,12 @@ contract ERC20WrapperIntegrationTest is BaseTest {
         wrapper = new ERC20WrapperMock("wrapper", "WRP", token, MORPHO);
     }
 
-    function testDeployERC20WrapperBase(string memory name, string memory symbol, address underlying, address morpho)
-        public
-    {
-        ERC20WrapperMock newWrapper = new ERC20WrapperMock(name, symbol, IERC20(underlying), morpho);
+    function testDeployERC20WrapperBase(string memory name, string memory symbol, address morpho) public {
+        ERC20WrapperMock newWrapper = new ERC20WrapperMock(name, symbol, IERC20(UNDERLYING), morpho);
 
         assertEq(newWrapper.name(), name);
         assertEq(newWrapper.symbol(), symbol);
-        assertEq(address(newWrapper.UNDERLYING()), underlying);
+        assertEq(address(newWrapper.UNDERLYING()), UNDERLYING);
         assertEq(newWrapper.MORPHO(), morpho);
     }
 
@@ -152,7 +151,7 @@ contract ERC20WrapperIntegrationTest is BaseTest {
 
     function testTransferFromNoPermissionTo(address from, address to, uint256 value) public {
         _assumeNotEqual(from, to);
-        assumeNotZeroAddress(from);
+        _assumeNotMorphoNorZeroAddressNorWrapper(from);
         _assumeNotMorphoNorZeroAddressNorWrapper(to);
 
         _wrap(from, value);

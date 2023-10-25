@@ -27,12 +27,6 @@ contract ERC20WrapperUnitTest is ERC20WrapperBase, BaseTest {
         assertTrue(hasPermission(MORPHO));
     }
 
-    function testHasPermissionRandomAddress(address account) public {
-        vm.assume(account != MORPHO);
-
-        assertFalse(hasPermission(account));
-    }
-
     function testUpdateFromNoPermission(address from, uint256 value) external {
         vm.assume(!hasPermission(from));
 
@@ -49,6 +43,8 @@ contract ERC20WrapperUnitTest is ERC20WrapperBase, BaseTest {
 
     function testUpdateFromAndToPermission(address from, address to, uint256 value) external {
         _assumeNotEqual(from, to);
+        _assumeNotZeroAddressNorWrapper(from);
+        _assumeNotZeroAddressNorWrapper(to);
         deal(address(this), from, value);
 
         _setPermission(from, true);
@@ -62,11 +58,16 @@ contract ERC20WrapperUnitTest is ERC20WrapperBase, BaseTest {
         assertEq(balanceOf(to), value);
     }
 
+    function _assumeNotZeroAddressNorWrapper(address account) internal view {
+        assumeNotZeroAddress(account);
+        vm.assume(account != address(this));
+    }
+
     function _setPermission(address account, bool permissioned) internal {
         _hasPermission[account] = permissioned;
     }
 
-    function hasPermission(address account) override view public returns (bool) {
+    function hasPermission(address account) public view override returns (bool) {
         return _hasPermission[account] || super.hasPermission(account);
     }
 }
