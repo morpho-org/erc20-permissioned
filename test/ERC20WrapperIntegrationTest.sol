@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {IERC20} from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 
+import {ERC20WrapperBase} from "../src/ERC20WrapperBase.sol";
 import {ERC20WrapperMock} from "./mocks/ERC20WrapperMock.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
@@ -38,7 +39,7 @@ contract ERC20WrapperIntegrationTest is Test {
     }
 
     function testAddressZeroHasPermission() public {
-        assertTrue(wrapper.hasPermission(BUNDLER));
+        assertTrue(wrapper.hasPermission(address(0)));
     }
 
     function testMorphoHasPermission() public {
@@ -47,13 +48,6 @@ contract ERC20WrapperIntegrationTest is Test {
 
     function testBundlerHasPermission() public {
         assertTrue(wrapper.hasPermission(BUNDLER));
-    }
-
-    function testHasPermissionRandomAddress(address account) public {
-        assumeNotZeroAddress(account);
-        vm.assume(account != MORPHO && account != BUNDLER);
-
-        assertFalse(wrapper.hasPermission(account));
     }
 
     function testHasPermission(address account) public {
@@ -78,7 +72,19 @@ contract ERC20WrapperIntegrationTest is Test {
         assertEq(wrapper.balanceOf(account), value);
     }
 
+    function depositForNoPermission(address account, uint256 value) public {
+        wrapper.setPermission(account, false);
+        deal(address(token), account, value);
+
+        vm.startPrank(account);
+        token.approve(address(wrapper), value);
+
+        vm.expectRevert(abi.encodeWithSelector(ERC20WrapperBase.NoPermission.selector, account));
+        wrapper.depositFor(account, value);
+    }
+
     function testTransfer(address from, address to, uint256 value) public {
+        _assumeNotEqual(from, to);
         assumeNotZeroAddress(from);
         assumeNotZeroAddress(to);
 
@@ -93,7 +99,35 @@ contract ERC20WrapperIntegrationTest is Test {
         assertEq(wrapper.balanceOf(to), value);
     }
 
+    function testTransferNoPermissionFrom(address from, address to, uint256 value) public {
+        _assumeNotEqual(from, to);
+        _assumeNotMorphoNorBundlerNorZeroAddress(from);
+        assumeNotZeroAddress(to);
+
+        _depositFor(from, value);
+
+        wrapper.setPermission(from, false);
+        wrapper.setPermission(to, true);
+
+        vm.prank(from);
+        vm.expectRevert(abi.encodeWithSelector(ERC20WrapperBase.NoPermission.selector, from));
+        wrapper.transfer(to, value);
+    }
+
+    function testTransferNoPermissionTo(address to, uint256 value) public {
+        _assumeNotMorphoNorBundlerNorZeroAddress(to);
+
+        _depositFor(RECEIVER, value);
+
+        wrapper.setPermission(to, false);
+
+        vm.prank(RECEIVER);
+        vm.expectRevert(abi.encodeWithSelector(ERC20WrapperBase.NoPermission.selector, to));
+        wrapper.transfer(to, value);
+    }
+
     function testTransferFrom(address from, address to, uint256 value) public {
+        _assumeNotEqual(from, to);
         assumeNotZeroAddress(from);
         assumeNotZeroAddress(to);
 
@@ -106,8 +140,42 @@ contract ERC20WrapperIntegrationTest is Test {
 
         wrapper.transferFrom(from, to, value);
 
-        assertEq(wrapper.balanceOf(from), 0);
-        assertEq(wrapper.balanceOf(to), value);
+        assertEq(wrapper.balanceOf(from), 0, "balanceOf(from)");
+        assertEq(wrapper.balanceOf(to), value, "balanceOf(to)");
+    }
+
+    function testTransferFromNoPermissionFrom(address from, address to, uint256 value) public {
+        _assumeNotEqual(from, to);
+        _assumeNotMorphoNorBundlerNorZeroAddress(from);
+        assumeNotZeroAddress(to);
+
+        _depositFor(from, value);
+
+        wrapper.setPermission(from, false);
+        wrapper.setPermission(to, true);
+
+        vm.prank(from);
+        wrapper.approve(address(this), value);
+
+        vm.expectRevert(abi.encodeWithSelector(ERC20WrapperBase.NoPermission.selector, from));
+        wrapper.transferFrom(from, to, value);
+    }
+
+    function testTransferFromNoPermissionTo(address from, address to, uint256 value) public {
+        _assumeNotEqual(from, to);
+        assumeNotZeroAddress(from);
+        _assumeNotMorphoNorBundlerNorZeroAddress(to);
+
+        _depositFor(from, value);
+
+        wrapper.setPermission(from, true);
+        wrapper.setPermission(to, false);
+
+        vm.prank(from);
+        wrapper.approve(address(this), value);
+
+        vm.expectRevert(abi.encodeWithSelector(ERC20WrapperBase.NoPermission.selector, to));
+        wrapper.transferFrom(from, to, value);
     }
 
     function testWithdrawTo(address to, uint256 value) public {
@@ -133,5 +201,15 @@ contract ERC20WrapperIntegrationTest is Test {
         token.approve(address(wrapper), value);
         wrapper.depositFor(account, value);
         vm.stopPrank();
+    }
+
+    function _assumeNotMorphoNorBundlerNorZeroAddress(address account) internal view {
+        vm.assume(account != BUNDLER);
+        vm.assume(account != MORPHO);
+        assumeNotZeroAddress(account);
+    }
+
+    function _assumeNotEqual(address account1, address account2) internal pure {
+        vm.assume(account1 != account2);
     }
 }
