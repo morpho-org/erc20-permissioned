@@ -4,17 +4,19 @@ pragma solidity ^0.8.13;
 import {ERC20WrapperBase} from "../src/ERC20WrapperBase.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
-import "forge-std/Test.sol";
+import "./helpers/BaseTest.sol";
 
-contract ERC20WrapperUnitTest is ERC20WrapperBase, Test {
+contract ERC20WrapperUnitTest is ERC20WrapperBase, BaseTest {
     ERC20WrapperBase internal wrapper;
     ERC20Mock internal token;
 
-    constructor() ERC20WrapperBase("wrapper", "WRP", token, makeAddr("Morpho"), makeAddr("Bundler")) {}
+    mapping(address => bool) internal _hasPermission;
+
+    constructor() ERC20WrapperBase("wrapper", "WRP", token, makeAddr("Morpho")) {}
 
     function setUp() public {
         token = new ERC20Mock("token", "TKN");
-        wrapper = new ERC20WrapperBase("wrapper", "WRP", token, MORPHO, BUNDLER);
+        wrapper = new ERC20WrapperBase("wrapper", "WRP", token, MORPHO);
     }
 
     function testAddressZeroHasPermission() public {
@@ -22,15 +24,11 @@ contract ERC20WrapperUnitTest is ERC20WrapperBase, Test {
     }
 
     function testMorphoHasPermission() public {
-        assertTrue(hasPermission(BUNDLER));
-    }
-
-    function testBundlerHasPermission() public {
-        assertTrue(hasPermission(BUNDLER));
+        assertTrue(hasPermission(MORPHO));
     }
 
     function testHasPermissionRandomAddress(address account) public {
-        vm.assume(account != MORPHO && account != BUNDLER);
+        vm.assume(account != MORPHO);
 
         assertFalse(hasPermission(account));
     }
@@ -49,14 +47,26 @@ contract ERC20WrapperUnitTest is ERC20WrapperBase, Test {
         _update(MORPHO, to, value);
     }
 
-    function testUpdateFromAndToPermissioned(uint256 value) external {
-        deal(address(this), MORPHO, value);
+    function testUpdateFromAndToPermission(address from, address to, uint256 value) external {
+        _assumeNotEqual(from, to);
+        deal(address(this), from, value);
+
+        _setPermission(from, true);
+        _setPermission(to, true);
 
         vm.expectEmit();
-        emit Transfer(MORPHO, BUNDLER, value);
-        _update(MORPHO, BUNDLER, value);
+        emit Transfer(from, to, value);
+        _update(from, to, value);
 
-        assertEq(balanceOf(MORPHO), 0);
-        assertEq(balanceOf(BUNDLER), value);
+        assertEq(balanceOf(from), 0);
+        assertEq(balanceOf(to), value);
+    }
+
+    function _setPermission(address account, bool permissioned) internal {
+        _hasPermission[account] = permissioned;
+    }
+
+    function hasPermission(address account) override view public returns (bool) {
+        return _hasPermission[account] || super.hasPermission(account);
     }
 }

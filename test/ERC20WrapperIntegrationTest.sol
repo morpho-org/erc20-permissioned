@@ -7,11 +7,10 @@ import {ERC20WrapperBase} from "../src/ERC20WrapperBase.sol";
 import {ERC20WrapperMock} from "./mocks/ERC20WrapperMock.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
-import "forge-std/Test.sol";
+import "./helpers/BaseTest.sol";
 
-contract ERC20WrapperIntegrationTest is Test {
+contract ERC20WrapperIntegrationTest is BaseTest {
     address internal MORPHO = makeAddr("Morpho");
-    address internal BUNDLER = makeAddr("Bundler");
     address internal RECEIVER = makeAddr("Receiver");
 
     ERC20WrapperMock internal wrapper;
@@ -19,23 +18,18 @@ contract ERC20WrapperIntegrationTest is Test {
 
     function setUp() public {
         token = new ERC20Mock("token", "TKN");
-        wrapper = new ERC20WrapperMock("wrapper", "WRP", token, MORPHO, BUNDLER);
+        wrapper = new ERC20WrapperMock("wrapper", "WRP", token, MORPHO);
     }
 
-    function testDeployERC20WrapperBase(
-        string memory name,
-        string memory symbol,
-        address underlying,
-        address morpho,
-        address bundler
-    ) public {
-        ERC20WrapperMock newWrapper = new ERC20WrapperMock(name, symbol, IERC20(underlying), morpho, bundler);
+    function testDeployERC20WrapperBase(string memory name, string memory symbol, address underlying, address morpho)
+        public
+    {
+        ERC20WrapperMock newWrapper = new ERC20WrapperMock(name, symbol, IERC20(underlying), morpho);
 
         assertEq(newWrapper.name(), name);
         assertEq(newWrapper.symbol(), symbol);
-        assertEq(address(newWrapper.underlying()), underlying);
+        assertEq(address(newWrapper.UNDERLYING()), underlying);
         assertEq(newWrapper.MORPHO(), morpho);
-        assertEq(newWrapper.BUNDLER(), bundler);
     }
 
     function testAddressZeroHasPermission() public {
@@ -43,11 +37,7 @@ contract ERC20WrapperIntegrationTest is Test {
     }
 
     function testMorphoHasPermission() public {
-        assertTrue(wrapper.hasPermission(BUNDLER));
-    }
-
-    function testBundlerHasPermission() public {
-        assertTrue(wrapper.hasPermission(BUNDLER));
+        assertTrue(wrapper.hasPermission(MORPHO));
     }
 
     function testHasPermission(address account) public {
@@ -57,22 +47,21 @@ contract ERC20WrapperIntegrationTest is Test {
     }
 
     function testHasNoPermission(address account) public {
-        assumeNotZeroAddress(account);
-        vm.assume(account != MORPHO && account != BUNDLER);
+        _assumeNotMorphoNorZeroAddressNorWrapper(account);
 
         wrapper.setPermission(account, false);
 
         assertFalse(wrapper.hasPermission(account));
     }
 
-    function depositFor(address account, uint256 value) public {
-        _depositFor(account, value);
+    function wrap(address account, uint256 value) public {
+        _wrap(account, value);
 
         assertEq(token.balanceOf(address(wrapper)), value);
         assertEq(wrapper.balanceOf(account), value);
     }
 
-    function depositForNoPermission(address account, uint256 value) public {
+    function wrapNoPermission(address account, uint256 value) public {
         wrapper.setPermission(account, false);
         deal(address(token), account, value);
 
@@ -80,7 +69,7 @@ contract ERC20WrapperIntegrationTest is Test {
         token.approve(address(wrapper), value);
 
         vm.expectRevert(abi.encodeWithSelector(ERC20WrapperBase.NoPermission.selector, account));
-        wrapper.depositFor(account, value);
+        wrapper.wrap(account, value);
     }
 
     function testTransfer(address from, address to, uint256 value) public {
@@ -88,7 +77,7 @@ contract ERC20WrapperIntegrationTest is Test {
         assumeNotZeroAddress(from);
         assumeNotZeroAddress(to);
 
-        _depositFor(from, value);
+        _wrap(from, value);
 
         wrapper.setPermission(to, true);
 
@@ -101,10 +90,10 @@ contract ERC20WrapperIntegrationTest is Test {
 
     function testTransferNoPermissionFrom(address from, address to, uint256 value) public {
         _assumeNotEqual(from, to);
-        _assumeNotMorphoNorBundlerNorZeroAddress(from);
+        _assumeNotMorphoNorZeroAddressNorWrapper(from);
         assumeNotZeroAddress(to);
 
-        _depositFor(from, value);
+        _wrap(from, value);
 
         wrapper.setPermission(from, false);
         wrapper.setPermission(to, true);
@@ -115,9 +104,9 @@ contract ERC20WrapperIntegrationTest is Test {
     }
 
     function testTransferNoPermissionTo(address to, uint256 value) public {
-        _assumeNotMorphoNorBundlerNorZeroAddress(to);
+        _assumeNotMorphoNorZeroAddressNorWrapper(to);
 
-        _depositFor(RECEIVER, value);
+        _wrap(RECEIVER, value);
 
         wrapper.setPermission(to, false);
 
@@ -128,10 +117,10 @@ contract ERC20WrapperIntegrationTest is Test {
 
     function testTransferFrom(address from, address to, uint256 value) public {
         _assumeNotEqual(from, to);
-        assumeNotZeroAddress(from);
-        assumeNotZeroAddress(to);
+        _assumeNotZeroAddressNorWrapper(from);
+        _assumeNotZeroAddressNorWrapper(to);
 
-        _depositFor(from, value);
+        _wrap(from, value);
 
         wrapper.setPermission(to, true);
 
@@ -146,10 +135,10 @@ contract ERC20WrapperIntegrationTest is Test {
 
     function testTransferFromNoPermissionFrom(address from, address to, uint256 value) public {
         _assumeNotEqual(from, to);
-        _assumeNotMorphoNorBundlerNorZeroAddress(from);
+        _assumeNotMorphoNorZeroAddressNorWrapper(from);
         assumeNotZeroAddress(to);
 
-        _depositFor(from, value);
+        _wrap(from, value);
 
         wrapper.setPermission(from, false);
         wrapper.setPermission(to, true);
@@ -164,9 +153,9 @@ contract ERC20WrapperIntegrationTest is Test {
     function testTransferFromNoPermissionTo(address from, address to, uint256 value) public {
         _assumeNotEqual(from, to);
         assumeNotZeroAddress(from);
-        _assumeNotMorphoNorBundlerNorZeroAddress(to);
+        _assumeNotMorphoNorZeroAddressNorWrapper(to);
 
-        _depositFor(from, value);
+        _wrap(from, value);
 
         wrapper.setPermission(from, true);
         wrapper.setPermission(to, false);
@@ -178,37 +167,37 @@ contract ERC20WrapperIntegrationTest is Test {
         wrapper.transferFrom(from, to, value);
     }
 
-    function testWithdrawTo(address to, uint256 value) public {
+    function testUnwrap(address to, uint256 value) public {
         assumeNotZeroAddress(to);
 
-        _depositFor(RECEIVER, value);
+        _wrap(RECEIVER, value);
 
         wrapper.setPermission(to, true);
 
         vm.prank(RECEIVER);
-        wrapper.withdrawTo(to, value);
+        wrapper.unwrap(RECEIVER, to, value);
 
         assertEq(wrapper.balanceOf(RECEIVER), 0);
         assertEq(token.balanceOf(to), value);
     }
 
-    function _depositFor(address account, uint256 value) public {
+    function _wrap(address account, uint256 value) public {
         wrapper.setPermission(account, true);
         deal(address(token), account, value);
 
         vm.startPrank(account);
         token.approve(address(wrapper), value);
-        wrapper.depositFor(account, value);
+        wrapper.wrap(account, value);
         vm.stopPrank();
     }
 
-    function _assumeNotMorphoNorBundlerNorZeroAddress(address account) internal view {
-        vm.assume(account != BUNDLER);
-        vm.assume(account != MORPHO);
+    function _assumeNotZeroAddressNorWrapper(address account) internal view {
         assumeNotZeroAddress(account);
+        vm.assume(account != address(wrapper));
     }
 
-    function _assumeNotEqual(address account1, address account2) internal pure {
-        vm.assume(account1 != account2);
+    function _assumeNotMorphoNorZeroAddressNorWrapper(address account) internal view {
+        vm.assume(account != MORPHO);
+        _assumeNotZeroAddressNorWrapper(account);
     }
 }
