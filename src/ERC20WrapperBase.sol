@@ -10,7 +10,8 @@ import {ERC20Wrapper} from "openzeppelin-contracts/contracts/token/ERC20/extensi
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice ERC20Wrapper contract to wrap/unwrap permissionless tokens and add a permissioning scheme.
-/// @dev Inherit this contract and override the `hasPermission` and `_update` functions to change the permissioning scheme.
+/// @dev Inherit this contract and override the `hasPermission` and `_update` functions to change the permissioning
+/// scheme.
 contract ERC20WrapperBase is ERC20Wrapper {
     /* ERRORS */
 
