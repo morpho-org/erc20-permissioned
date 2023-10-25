@@ -192,7 +192,6 @@ contract ERC20WrapperIntegrationTest is Test {
         assertEq(token.balanceOf(to), value);
     }
 
-
     function _depositFor(address account, uint256 value) public {
         wrapper.setPermission(account, true);
         deal(address(token), account, value);
