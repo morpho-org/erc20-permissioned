@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {IERC20} from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
-
 import {ERC20WrapperBase} from "../src/ERC20WrapperBase.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
@@ -37,17 +35,17 @@ contract ERC20WrapperUnitTest is ERC20WrapperBase, Test {
         assertFalse(hasPermission(account));
     }
 
-    function testUpdateFromNotPermissioned(address from, uint256 value) external {
+    function testUpdateFromNoPermission(address from, uint256 value) external {
         vm.assume(!hasPermission(from));
 
-        vm.expectRevert(abi.encodeWithSelector(NotPermissioned.selector, from));
+        vm.expectRevert(abi.encodeWithSelector(NoPermission.selector, from));
         _update(from, MORPHO, value);
     }
 
-    function testUpdateToNotPermissioned(address to, uint256 value) external {
+    function testUpdateToNoPermission(address to, uint256 value) external {
         vm.assume(!hasPermission(to));
 
-        vm.expectRevert(abi.encodeWithSelector(NotPermissioned.selector, to));
+        vm.expectRevert(abi.encodeWithSelector(NoPermission.selector, to));
         _update(MORPHO, to, value);
     }
 
