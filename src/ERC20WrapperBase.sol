@@ -7,6 +7,7 @@ import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {ERC20Permit} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
 /// @title ERC20WrapperBase
 /// @author Morpho Labs
@@ -14,7 +15,7 @@ import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 /// @notice ERC20 wrapper contract to wrap/unwrap permissionless tokens and add a permissioning scheme.
 /// @dev Inherit this contract and override the `hasPermission` and `_update` functions to change the permissioning
 /// scheme.
-contract ERC20WrapperBase is ERC20 {
+contract ERC20WrapperBase is ERC20Permit {
     /* ERRORS */
 
     /// @dev Thrown when underlying token couldn't be wrapped.
@@ -38,7 +39,10 @@ contract ERC20WrapperBase is ERC20 {
     /// @param symbol_ The symbol of the token.
     /// @param underlying The address of the underlying token.
     /// @param morpho The address of the Morpho contract. Can be the zero address.
-    constructor(string memory name_, string memory symbol_, IERC20 underlying, address morpho) ERC20(name_, symbol_) {
+    constructor(string memory name_, string memory symbol_, IERC20 underlying, address morpho)
+        ERC20(name_, symbol_)
+        ERC20Permit(name_)
+    {
         if (underlying == this) revert ERC20InvalidUnderlying(address(this));
 
         UNDERLYING = underlying;
