@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {IERC20} from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 
-import {ERC20WrapperBase} from "../src/ERC20WrapperBase.sol";
+import {ERC20WrapperMock} from "./mocks/ERC20WrapperMock.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
 import "forge-std/Test.sol";
@@ -11,13 +11,14 @@ import "forge-std/Test.sol";
 contract ERC20WrapperIntegrationTest is Test {
     address internal MORPHO = makeAddr("Morpho");
     address internal BUNDLER = makeAddr("Bundler");
+    address internal RECEIVER = makeAddr("Receiver");
 
-    ERC20WrapperBase internal wrapper;
+    ERC20WrapperMock internal wrapper;
     ERC20Mock internal token;
 
     function setUp() public {
         token = new ERC20Mock("token", "TKN");
-        wrapper = new ERC20WrapperBase("wrapper", "WRP", token, MORPHO, BUNDLER);
+        wrapper = new ERC20WrapperMock("wrapper", "WRP", token, MORPHO, BUNDLER);
     }
 
     function testDeployERC20WrapperBase(
@@ -27,7 +28,7 @@ contract ERC20WrapperIntegrationTest is Test {
         address morpho,
         address bundler
     ) public {
-        ERC20WrapperBase newWrapper = new ERC20WrapperBase(name, symbol, IERC20(underlying), morpho, bundler);
+        ERC20WrapperMock newWrapper = new ERC20WrapperMock(name, symbol, IERC20(underlying), morpho, bundler);
 
         assertEq(newWrapper.name(), name);
         assertEq(newWrapper.symbol(), symbol);
@@ -49,8 +50,88 @@ contract ERC20WrapperIntegrationTest is Test {
     }
 
     function testHasPermissionRandomAddress(address account) public {
+        assumeNotZeroAddress(account);
         vm.assume(account != MORPHO && account != BUNDLER);
 
         assertFalse(wrapper.hasPermission(account));
+    }
+
+    function testHasPermission(address account) public {
+        wrapper.setPermission(account, true);
+
+        assertTrue(wrapper.hasPermission(account));
+    }
+
+    function testHasNoPermission(address account) public {
+        assumeNotZeroAddress(account);
+        vm.assume(account != MORPHO && account != BUNDLER);
+
+        wrapper.setPermission(account, false);
+
+        assertFalse(wrapper.hasPermission(account));
+    }
+
+    function depositFor(address account, uint256 value) public {
+        _depositFor(account, value);
+
+        assertEq(token.balanceOf(address(wrapper)), value);
+        assertEq(wrapper.balanceOf(account), value);
+    }
+
+    function testTransfer(address from, address to, uint256 value) public {
+        assumeNotZeroAddress(from);
+        assumeNotZeroAddress(to);
+
+        _depositFor(from, value);
+
+        wrapper.setPermission(to, true);
+
+        vm.prank(from);
+        wrapper.transfer(to, value);
+
+        assertEq(wrapper.balanceOf(from), 0);
+        assertEq(wrapper.balanceOf(to), value);
+    }
+
+    function testTransferFrom(address from, address to, uint256 value) public {
+        assumeNotZeroAddress(from);
+        assumeNotZeroAddress(to);
+
+        _depositFor(from, value);
+
+        wrapper.setPermission(to, true);
+
+        vm.prank(from);
+        wrapper.approve(address(this), value);
+
+        wrapper.transferFrom(from, to, value);
+
+        assertEq(wrapper.balanceOf(from), 0);
+        assertEq(wrapper.balanceOf(to), value);
+    }
+
+    function testWithdrawTo(address to, uint256 value) public {
+        assumeNotZeroAddress(to);
+
+        _depositFor(RECEIVER, value);
+
+        wrapper.setPermission(to, true);
+
+        vm.prank(RECEIVER);
+        wrapper.withdrawTo(to, value);
+
+        assertEq(wrapper.balanceOf(RECEIVER), 0);
+        assertEq(token.balanceOf(to), value);
+    }
+
+
+    function _depositFor(address account, uint256 value) public {
+        wrapper.setPermission(account, true);
+        deal(address(token), account, value);
+
+        vm.startPrank(account);
+        token.approve(address(wrapper), value);
+        wrapper.depositFor(account, value);
+        vm.stopPrank();
     }
 }
