@@ -26,14 +26,15 @@ contract ERC20WrapperBase is ERC20Wrapper {
 
     /* PUBLIC */
 
+    /// @dev Returns true if `account` has permission to wrap and unwrap tokens.
     function hasPermission(address account) public view virtual returns (bool) {
-        return account == MORPHO || account == BUNDLER;
+        return account == address(0) || account == MORPHO || account == BUNDLER;
     }
 
     /* INTERNAL */
 
     /// @dev See {ERC20Wrapper-_update}.
-    /// @dev The sender is not checked.
+    /// @dev The sender is not checked. Override this function to check the sender if needed.
     function _update(address from, address to, uint256 value) internal virtual override {
         if (!hasPermission(from)) revert NotPermissioned(from);
         if (!hasPermission(to)) revert NotPermissioned(to);
