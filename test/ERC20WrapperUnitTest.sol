@@ -19,10 +19,6 @@ contract ERC20WrapperUnitTest is ERC20WrapperBase, BaseTest {
         wrapper = new ERC20WrapperBase("wrapper", "WRP", token, MORPHO);
     }
 
-    function testAddressZeroHasPermission() public {
-        assertTrue(hasPermission(address(0)));
-    }
-
     function testMorphoHasPermission() public {
         assertTrue(hasPermission(MORPHO));
     }

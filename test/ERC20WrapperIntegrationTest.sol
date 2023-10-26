@@ -31,10 +31,6 @@ contract ERC20WrapperIntegrationTest is BaseTest {
         assertEq(newWrapper.MORPHO(), morpho);
     }
 
-    function testAddressZeroHasPermission() public {
-        assertTrue(wrapper.hasPermission(address(0)));
-    }
-
     function testMorphoHasPermission() public {
         assertTrue(wrapper.hasPermission(MORPHO));
     }

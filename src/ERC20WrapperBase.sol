@@ -73,7 +73,7 @@ contract ERC20WrapperBase is ERC20 {
     /// @dev By default Morpho and Bundler have permission.
     /// @dev Override this function to change the permissioning scheme.
     function hasPermission(address account) public view virtual returns (bool) {
-        return account == address(0) || account == MORPHO;
+        return account == MORPHO;
     }
 
     /// @dev See {ERC20-decimals}.
@@ -90,8 +90,8 @@ contract ERC20WrapperBase is ERC20 {
     /// @dev See {ERC20Wrapper-_update}.
     /// @dev The sender is not checked. Override this function to check the sender if needed.
     function _update(address from, address to, uint256 value) internal virtual override {
-        if (!hasPermission(from)) revert NoPermission(from);
-        if (!hasPermission(to)) revert NoPermission(to);
+        if (from != address(0) && !hasPermission(from)) revert NoPermission(from);
+        if (to != address(0) && !hasPermission(to)) revert NoPermission(to);
 
         super._update(from, to, value);
     }
