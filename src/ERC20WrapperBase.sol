@@ -31,6 +31,9 @@ contract ERC20WrapperBase is ERC20 {
     /// @notice The address of the Morpho contract.
     address public immutable MORPHO;
 
+    /// @notice The number of decimals of the token.
+    uint8 private _DECIMALS;
+
     /* CONSTRUCTOR */
 
     /// @notice Constructs the contract.
@@ -42,8 +45,10 @@ contract ERC20WrapperBase is ERC20 {
         if (underlying == this) revert ERC20InvalidUnderlying(address(this));
 
         UNDERLYING = underlying;
-
         MORPHO = morpho;
+
+        (bool success, uint8 underlyingDecimals) = _tryGetAssetDecimals(underlying);
+        _DECIMALS = success ? underlyingDecimals : 18;
     }
 
     /* PUBLIC */
@@ -78,11 +83,7 @@ contract ERC20WrapperBase is ERC20 {
 
     /// @dev See {ERC20-decimals}.
     function decimals() public view virtual override returns (uint8) {
-        try IERC20Metadata(address(UNDERLYING)).decimals() returns (uint8 value) {
-            return value;
-        } catch {
-            return super.decimals();
-        }
+        return _DECIMALS;
     }
 
     /* INTERNAL */
@@ -94,5 +95,19 @@ contract ERC20WrapperBase is ERC20 {
         if (to != address(0) && !hasPermission(to)) revert NoPermission(to);
 
         super._update(from, to, value);
+    }
+
+    /// @dev Attempts to fetch the asset decimals. A return value of false indicates that the attempt failed in some
+    /// way.
+    function _tryGetAssetDecimals(IERC20 asset_) private view returns (bool, uint8) {
+        (bool success, bytes memory encodedDecimals) =
+            address(asset_).staticcall(abi.encodeCall(IERC20Metadata.decimals, ()));
+        if (success && encodedDecimals.length >= 32) {
+            uint256 returnedDecimals = abi.decode(encodedDecimals, (uint256));
+            if (returnedDecimals <= type(uint8).max) {
+                return (true, uint8(returnedDecimals));
+            }
+        }
+        return (false, 0);
     }
 }
