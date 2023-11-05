@@ -6,13 +6,13 @@ import {IERC20} from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {ERC20Wrapper} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 
-/// @title ERC20WrapperBase
+/// @title ERC20GatedBase
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice ERC20Wrapper contract to wrap/unwrap permissionless tokens and add a permissioning scheme.
+/// @notice ERC20Gated contract to wrap/unwrap non gated tokens and add a permissioning scheme.
 /// @dev Inherit this contract and override the `hasPermission` and `_update` functions to change the permissioning
 /// scheme.
-contract ERC20WrapperBase is ERC20Wrapper {
+contract ERC20GatedBase is ERC20Wrapper {
     /* ERRORS */
 
     /// @notice Thrown when `account` has no permission.
