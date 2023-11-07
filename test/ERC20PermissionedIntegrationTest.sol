@@ -22,12 +22,9 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
         wrapper = new ERC20PermissionedMock(token, MORPHO, BUNDLER);
     }
 
-    function testDeployERC20PermissionedBase(
-        string memory name,
-        string memory symbol,
-        address morpho,
-        address bundler
-    ) public {
+    function testDeployERC20PermissionedBase(string memory name, string memory symbol, address morpho, address bundler)
+        public
+    {
         ERC20Mock underlying = new ERC20Mock(name, symbol);
         ERC20PermissionedMock newWrapper = new ERC20PermissionedMock(IERC20Metadata(underlying), morpho, bundler);
 
