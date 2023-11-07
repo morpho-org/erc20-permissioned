@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.21;
 
-import {IERC20} from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
+import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
 
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
@@ -30,15 +30,13 @@ contract ERC20PermissionedBase is ERC20Wrapper, ERC20Permit {
     /* CONSTRUCTOR */
 
     /// @notice Constructs the contract.
-    /// @param name_ The name of the token.
-    /// @param symbol_ The symbol of the token.
     /// @param underlyingToken The address of the underlying token.
     /// @param morpho The address of the Morpho contract. Can be the zero address.
     /// @param bundler The address of the Bundler contract. Can be the zero address.
-    constructor(string memory name_, string memory symbol_, IERC20 underlyingToken, address morpho, address bundler)
+    constructor(IERC20Metadata underlyingToken, address morpho, address bundler)
         ERC20Wrapper(underlyingToken)
-        ERC20Permit(name_)
-        ERC20(name_, symbol_)
+        ERC20Permit(string.concat("Permissioned ", underlyingToken.name()))
+        ERC20(string.concat("Permissioned ", underlyingToken.name()), string.concat("p", underlyingToken.symbol()))
     {
         MORPHO = morpho;
         BUNDLER = bundler;

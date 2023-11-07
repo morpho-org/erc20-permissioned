@@ -8,13 +8,12 @@ import "forge-std/Test.sol";
 
 contract ERC20PermissionedBaseUnitTest is ERC20PermissionedBase, Test {
     ERC20PermissionedBase internal wrapper;
-    ERC20Mock internal token;
+    ERC20Mock internal token = new ERC20Mock("token", "TKN");
 
-    constructor() ERC20PermissionedBase("wrapper", "WRP", token, makeAddr("Morpho"), makeAddr("Bundler")) {}
+    constructor() ERC20PermissionedBase(token, makeAddr("Morpho"), makeAddr("Bundler")) {}
 
     function setUp() public {
-        token = new ERC20Mock("token", "TKN");
-        wrapper = new ERC20PermissionedBase("wrapper", "WRP", token, MORPHO, BUNDLER);
+        wrapper = new ERC20PermissionedBase(token, MORPHO, BUNDLER);
     }
 
     function testAddressZeroHasPermission() public {

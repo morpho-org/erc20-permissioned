@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {IERC20} from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
+import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
 
 import {ERC20PermissionedMock} from "./mocks/ERC20PermissionedMock.sol";
 import {ERC20PermissionedBase} from "../src/ERC20PermissionedBase.sol";
@@ -19,21 +19,21 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
 
     function setUp() public {
         token = new ERC20Mock("token", "TKN");
-        wrapper = new ERC20PermissionedMock("wrapper", "WRP", token, MORPHO, BUNDLER);
+        wrapper = new ERC20PermissionedMock(token, MORPHO, BUNDLER);
     }
 
     function testDeployERC20PermissionedBase(
         string memory name,
         string memory symbol,
-        address underlying,
         address morpho,
         address bundler
     ) public {
-        ERC20PermissionedMock newWrapper = new ERC20PermissionedMock(name, symbol, IERC20(underlying), morpho, bundler);
+        ERC20Mock underlying = new ERC20Mock(name, symbol);
+        ERC20PermissionedMock newWrapper = new ERC20PermissionedMock(IERC20Metadata(underlying), morpho, bundler);
 
-        assertEq(newWrapper.name(), name);
-        assertEq(newWrapper.symbol(), symbol);
-        assertEq(address(newWrapper.underlying()), underlying);
+        assertEq(newWrapper.name(), string.concat("Permissioned ", underlying.name()));
+        assertEq(newWrapper.symbol(), string.concat("p", underlying.symbol()));
+        assertEq(address(newWrapper.underlying()), address(underlying));
         assertEq(newWrapper.MORPHO(), morpho);
         assertEq(newWrapper.BUNDLER(), bundler);
     }
