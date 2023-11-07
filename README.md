@@ -1,5 +1,5 @@
-## ERC20 Wrappers
+## ERC20 Permissioned
 
 ## License
 
-MetaMorpho is licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
+Permissioned ERC20s is licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
