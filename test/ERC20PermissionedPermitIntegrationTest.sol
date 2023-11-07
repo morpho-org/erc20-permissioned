@@ -9,7 +9,7 @@ import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 import {SigUtils} from "./helpers/SigUtils.sol";
 import "forge-std/Test.sol";
 
-contract ERC20GatedPermitIntegrationTest is Test {
+contract ERC20PermissionedPermitIntegrationTest is Test {
     address internal MORPHO = makeAddr("Morpho");
     address internal BUNDLER = makeAddr("Bundler");
 
@@ -26,7 +26,7 @@ contract ERC20GatedPermitIntegrationTest is Test {
 
     function setUp() public {
         token = new ERC20Mock("wrapper", "TKN");
-        wrapper = new ERC20PermissionedMock("wrapper", "WRP", wrapper, MORPHO, BUNDLER);
+        wrapper = new ERC20PermissionedMock("wrapper", "WRP", token, MORPHO, BUNDLER);
 
         sigUtils = new SigUtils(wrapper.DOMAIN_SEPARATOR());
 
