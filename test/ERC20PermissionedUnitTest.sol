@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {ERC20GatedBase} from "../src/ERC20GatedBase.sol";
+import {ERC20PermissionedBase} from "../src/ERC20PermissionedBase.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
 import "forge-std/Test.sol";
 
-contract ERC20GatedBaseUnitTest is ERC20GatedBase, Test {
-    ERC20GatedBase internal wrapper;
+contract ERC20PermissionedBaseUnitTest is ERC20PermissionedBase, Test {
+    ERC20PermissionedBase internal wrapper;
     ERC20Mock internal token;
 
-    constructor() ERC20GatedBase("wrapper", "WRP", token, makeAddr("Morpho"), makeAddr("Bundler")) {}
+    constructor() ERC20PermissionedBase("wrapper", "WRP", token, makeAddr("Morpho"), makeAddr("Bundler")) {}
 
     function setUp() public {
         token = new ERC20Mock("token", "TKN");
-        wrapper = new ERC20GatedBase("wrapper", "WRP", token, MORPHO, BUNDLER);
+        wrapper = new ERC20PermissionedBase("wrapper", "WRP", token, MORPHO, BUNDLER);
     }
 
     function testAddressZeroHasPermission() public {

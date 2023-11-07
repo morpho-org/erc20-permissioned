@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {ERC20Permit} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
-import {ERC20GatedMock} from "./mocks/ERC20GatedMock.sol";
+import {ERC20PermissionedMock} from "./mocks/ERC20PermissionedMock.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
 import {SigUtils} from "./helpers/SigUtils.sol";
@@ -21,12 +21,12 @@ contract ERC20GatedPermitIntegrationTest is Test {
     address internal owner;
     address internal spender;
 
-    ERC20GatedMock internal wrapper;
+    ERC20PermissionedMock internal wrapper;
     ERC20Mock internal token;
 
     function setUp() public {
         token = new ERC20Mock("wrapper", "TKN");
-        wrapper = new ERC20GatedMock("wrapper", "WRP", wrapper, MORPHO, BUNDLER);
+        wrapper = new ERC20PermissionedMock("wrapper", "WRP", wrapper, MORPHO, BUNDLER);
 
         sigUtils = new SigUtils(wrapper.DOMAIN_SEPARATOR());
 
