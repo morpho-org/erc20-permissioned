@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity ^0.8.0;
 
 import {IERC20} from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 
@@ -163,7 +163,7 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
 
     function testTransferFromNoPermissionTo(address from, address to, uint256 value) public {
         _assumeNotEqual(from, to);
-        assumeNotZeroAddress(from);
+        _assumeCorrectAddress(from);
         _assumeCorrectAddress(to);
 
         _depositFor(from, value);
