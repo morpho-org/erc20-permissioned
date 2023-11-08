@@ -163,7 +163,7 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
 
     function testTransferFromNoPermissionTo(address from, address to, uint256 value) public {
         _assumeNotEqual(from, to);
-        assumeNotZeroAddress(from);
+        _assumeCorrectAddress(from);
         _assumeCorrectAddress(to);
 
         _depositFor(from, value);
