@@ -22,7 +22,7 @@ contract ERC20PermissionedBase is ERC20Wrapper, ERC20Permit {
     /* CONSTANT */
 
     /// @notice The version of the contract.
-    string constant public VERSION = "v1.0";
+    string public constant VERSION = "v1.0";
 
     /* IMMUTABLES */
 
@@ -41,7 +41,10 @@ contract ERC20PermissionedBase is ERC20Wrapper, ERC20Permit {
     constructor(IERC20Metadata underlyingToken, address morpho, address bundler)
         ERC20Wrapper(underlyingToken)
         ERC20Permit(string.concat("Permissioned ", underlyingToken.name(), " ", VERSION))
-        ERC20(string.concat("Permissioned ", underlyingToken.name(), " ", VERSION), string.concat("p", underlyingToken.symbol(), VERSION))
+        ERC20(
+            string.concat("Permissioned ", underlyingToken.name(), " ", VERSION),
+            string.concat("p", underlyingToken.symbol(), VERSION)
+        )
     {
         MORPHO = morpho;
         BUNDLER = bundler;
