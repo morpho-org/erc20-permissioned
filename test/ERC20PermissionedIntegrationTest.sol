@@ -28,8 +28,8 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
         ERC20Mock underlying = new ERC20Mock(name, symbol);
         ERC20PermissionedMock newWrapper = new ERC20PermissionedMock(IERC20Metadata(underlying), morpho, bundler);
 
-        assertEq(newWrapper.name(), string.concat("Permissioned ", underlying.name()));
-        assertEq(newWrapper.symbol(), string.concat("p", underlying.symbol()));
+        assertEq(newWrapper.name(), string.concat("Permissioned ", underlying.name(), " ", newWrapper.VERSION()));
+        assertEq(newWrapper.symbol(), string.concat("p", underlying.symbol(), newWrapper.VERSION()));
         assertEq(address(newWrapper.underlying()), address(underlying));
         assertEq(newWrapper.MORPHO(), morpho);
         assertEq(newWrapper.BUNDLER(), bundler);

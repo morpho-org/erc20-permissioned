@@ -19,6 +19,11 @@ contract ERC20PermissionedBase is ERC20Wrapper, ERC20Permit {
     /// @notice Thrown when `account` has no permission.
     error NoPermission(address account);
 
+    /* CONSTANT */
+
+    /// @notice The version of the contract.
+    string constant public VERSION = "v1.0";
+
     /* IMMUTABLES */
 
     /// @notice The address of the Morpho contract.
@@ -35,8 +40,8 @@ contract ERC20PermissionedBase is ERC20Wrapper, ERC20Permit {
     /// @param bundler The address of the Bundler contract. Can be the zero address.
     constructor(IERC20Metadata underlyingToken, address morpho, address bundler)
         ERC20Wrapper(underlyingToken)
-        ERC20Permit(string.concat("Permissioned ", underlyingToken.name()))
-        ERC20(string.concat("Permissioned ", underlyingToken.name()), string.concat("p", underlyingToken.symbol()))
+        ERC20Permit(string.concat("Permissioned ", underlyingToken.name(), " ", VERSION))
+        ERC20(string.concat("Permissioned ", underlyingToken.name(), " ", VERSION), string.concat("p", underlyingToken.symbol(), VERSION))
     {
         MORPHO = morpho;
         BUNDLER = bundler;
@@ -53,6 +58,7 @@ contract ERC20PermissionedBase is ERC20Wrapper, ERC20Permit {
 
     /* ERC20 */
 
+    /// @dev See {ERC20-decimals}.
     function decimals() public view virtual override(ERC20, ERC20Wrapper) returns (uint8) {
         return ERC20Wrapper.decimals();
     }
