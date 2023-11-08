@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.21;
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity 0.8.20;
 
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
 
@@ -10,7 +10,7 @@ import {ERC20Wrapper} from "openzeppelin-contracts/contracts/token/ERC20/extensi
 /// @title ERC20PermissionedBase
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice ERC20Permissioned contract to wrap/unwrap non gated tokens and add a permissioning scheme.
+/// @notice ERC20Permissioned contract to wrap/unwrap permission-less tokens and add a permissioning scheme.
 /// @dev Inherit this contract and override the `hasPermission` and `_update` functions to change the permissioning
 /// scheme.
 contract ERC20PermissionedBase is ERC20Wrapper, ERC20Permit {

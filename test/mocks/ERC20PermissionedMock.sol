@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity ^0.8.0;
 
 import {ERC20PermissionedBase, ERC20, IERC20Metadata} from "../../src/ERC20PermissionedBase.sol";
 
