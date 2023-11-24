@@ -10,7 +10,7 @@ import {ERC20Wrapper} from "openzeppelin-contracts/contracts/token/ERC20/extensi
 /// @title ERC20PermissionedBase
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice ERC20Permissioned contract to wrap/unwrap permission-less tokens and add a permissioning scheme.
+/// @notice ERC20Permissioned contract to wrap/unwrap permissionless tokens and add a permissioning scheme.
 /// @dev Inherit this contract and override the `hasPermission` and `_update` functions to change the permissioning
 /// scheme.
 contract ERC20PermissionedBase is ERC20Wrapper, ERC20Permit {
@@ -46,8 +46,8 @@ contract ERC20PermissionedBase is ERC20Wrapper, ERC20Permit {
 
     /* PUBLIC */
 
-    /// @dev Returns true if `account` has no permission.
-    /// @dev By default Morpho and Bundler have permission.
+    /// @dev Returns true if `account` has permission to hold and transfer tokens.
+    /// @dev By default Morpho and Bundler have this permission.
     /// @dev Override this function to change the permissioning scheme.
     function hasPermission(address account) public view virtual returns (bool) {
         return account == address(0) || account == MORPHO || account == BUNDLER;
