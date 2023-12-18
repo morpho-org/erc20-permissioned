@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {IERC20} from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
+import {IERC20} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 
 import {ERC20PermissionedMock} from "./mocks/ERC20PermissionedMock.sol";
 import {ERC20PermissionedBase} from "../src/ERC20PermissionedBase.sol";
-import {ERC20Mock} from "./mocks/ERC20Mock.sol";
+import {ERC20Mock} from "../lib/openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
 
-import "forge-std/Test.sol";
+import "../lib/forge-std/src/Test.sol";
 
 contract ERC20PermissionedBaseIntegrationTest is Test {
     address internal MORPHO = makeAddr("Morpho");
@@ -18,7 +18,7 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
     ERC20Mock internal token;
 
     function setUp() public {
-        token = new ERC20Mock("token", "TKN");
+        token = new ERC20Mock();
         wrapper = new ERC20PermissionedMock("wrapper", "WRP", token, MORPHO, BUNDLER);
     }
 
