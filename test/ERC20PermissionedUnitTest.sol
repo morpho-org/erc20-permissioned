@@ -28,7 +28,7 @@ contract ERC20PermissionedBaseUnitTest is ERC20PermissionedBase, Test {
     }
 
     function testHasPermissionRandomAddress(address account) public {
-        vm.assume(account != MORPHO && account != BUNDLER);
+        vm.assume(account != address(0) && account != MORPHO && account != BUNDLER);
 
         assertFalse(hasPermission(account));
     }
