@@ -2,19 +2,17 @@
 pragma solidity ^0.8.0;
 
 import {ERC20PermissionedBase} from "../src/ERC20PermissionedBase.sol";
-import {ERC20Mock} from "./mocks/ERC20Mock.sol";
+import {ERC20Mock} from "../lib/openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
 
-import "forge-std/Test.sol";
+import "../lib/forge-std/src/Test.sol";
 
 contract ERC20PermissionedBaseUnitTest is ERC20PermissionedBase, Test {
-    ERC20PermissionedBase internal wrapper;
     ERC20Mock internal token;
 
     constructor() ERC20PermissionedBase("wrapper", "WRP", token, makeAddr("Morpho"), makeAddr("Bundler")) {}
 
     function setUp() public {
-        token = new ERC20Mock("token", "TKN");
-        wrapper = new ERC20PermissionedBase("wrapper", "WRP", token, MORPHO, BUNDLER);
+        token = new ERC20Mock();
     }
 
     function testAddressZeroHasPermission() public {
@@ -30,7 +28,7 @@ contract ERC20PermissionedBaseUnitTest is ERC20PermissionedBase, Test {
     }
 
     function testHasPermissionRandomAddress(address account) public {
-        vm.assume(account != MORPHO && account != BUNDLER);
+        vm.assume(account != address(0) && account != MORPHO && account != BUNDLER);
 
         assertFalse(hasPermission(account));
     }
