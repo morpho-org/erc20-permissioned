@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import {IERC20} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 
+import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
+
 import {ERC20PermissionedMock} from "./mocks/ERC20PermissionedMock.sol";
 import {ERC20PermissionedBase} from "../src/ERC20PermissionedBase.sol";
 import {ERC20Mock} from "../lib/openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
@@ -79,7 +81,7 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
         vm.startPrank(account);
         token.approve(address(wrapper), value);
 
-        vm.expectRevert(abi.encodeWithSelector(ERC20PermissionedBase.NoPermission.selector, account));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NoPermission.selector, account));
         wrapper.depositFor(account, value);
     }
 
@@ -110,7 +112,7 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
         wrapper.setPermission(to, true);
 
         vm.prank(from);
-        vm.expectRevert(abi.encodeWithSelector(ERC20PermissionedBase.NoPermission.selector, from));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NoPermission.selector, from));
         wrapper.transfer(to, value);
     }
 
@@ -122,7 +124,7 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
         wrapper.setPermission(to, false);
 
         vm.prank(RECEIVER);
-        vm.expectRevert(abi.encodeWithSelector(ERC20PermissionedBase.NoPermission.selector, to));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NoPermission.selector, to));
         wrapper.transfer(to, value);
     }
 
@@ -157,7 +159,7 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
         vm.prank(from);
         wrapper.approve(address(this), value);
 
-        vm.expectRevert(abi.encodeWithSelector(ERC20PermissionedBase.NoPermission.selector, from));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NoPermission.selector, from));
         wrapper.transferFrom(from, to, value);
     }
 
@@ -174,7 +176,7 @@ contract ERC20PermissionedBaseIntegrationTest is Test {
         vm.prank(from);
         wrapper.approve(address(this), value);
 
-        vm.expectRevert(abi.encodeWithSelector(ERC20PermissionedBase.NoPermission.selector, to));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NoPermission.selector, to));
         wrapper.transferFrom(from, to, value);
     }
 

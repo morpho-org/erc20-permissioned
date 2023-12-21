@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
+import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
+
 import {ERC20PermissionedBase} from "../src/ERC20PermissionedBase.sol";
 import {ERC20Mock} from "../lib/openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
 
@@ -36,14 +38,14 @@ contract ERC20PermissionedBaseUnitTest is ERC20PermissionedBase, Test {
     function testUpdateFromNoPermission(address from, uint256 value) external {
         vm.assume(!hasPermission(from));
 
-        vm.expectRevert(abi.encodeWithSelector(NoPermission.selector, from));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NoPermission.selector, from));
         _update(from, MORPHO, value);
     }
 
     function testUpdateToNoPermission(address to, uint256 value) external {
         vm.assume(!hasPermission(to));
 
-        vm.expectRevert(abi.encodeWithSelector(NoPermission.selector, to));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NoPermission.selector, to));
         _update(MORPHO, to, value);
     }
 
